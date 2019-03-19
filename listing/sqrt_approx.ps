@@ -1,0 +1,39 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 0 0 500 300
+25 22 translate
+94 dup scale
+.005 setlinewidth
+0 0 moveto 0 2.8 lineto stroke
+0 0 moveto 5 0 lineto stroke
+/x 0 def
+x x sqrt moveto
+500 {/x x 0.01 add def x x sqrt lineto} repeat
+stroke
+gsave
+1 0 0 setrgbcolor
+/x 4 def
+5 2.25 moveto
+10 {/y x sqrt def x y lineto x 2 div y .75 mul lineto /x x 4 div def} repeat
+stroke
+grestore
+gsave
+[.01 .01] 0 setdash
+1 0 moveto 1 1 lineto stroke
+0 1 moveto 1 1 lineto stroke
+2 0 moveto 2 1.5 lineto stroke
+/y 2 sqrt def
+0 y moveto 2 y lineto stroke
+0 1.5 moveto 2 1.5 lineto stroke
+4 0 moveto 4 2 lineto stroke
+0 2 moveto 4 2 lineto stroke
+grestore
+/Helvetica findfont 0.12 scalefont setfont
+%0 (0) stringwidth pop 2 div sub -.15 moveto (0) show
+1 (1) stringwidth pop 2 div sub -.15 moveto (1) show
+2 (2) stringwidth pop 2 div sub -.15 moveto (2) show
+4 (4) stringwidth pop 2 div sub -.15 moveto (4) show
+%-.05 (0) stringwidth pop sub -.03 moveto (0) show
+-.06 (1) stringwidth pop sub .97 moveto (1) show
+-.06 (1.5) stringwidth pop sub 1.47 moveto (1.5) show
+-.06 (2) stringwidth pop sub 1.97 moveto (2) show
+showpage

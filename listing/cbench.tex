@@ -1,0 +1,742 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{color,rotating,graphicx}
+\usepackage[a4paper]{geometry}
+
+\newcount\linecount
+\newread\inputlines
+\def\wc#1{
+\linecount=0
+\openin\inputlines=#1
+\ifeof\inputlines\else
+\catcode`\{=12\catcode`\}=12\readlines\catcode`\{=1\catcode`\}=2\fi
+}
+\def\readlines{
+\read\inputlines to\inputline
+\ifeof\inputlines\closein\inputlines
+\else\advance\linecount by 1\readlines\fi
+}
+
+\lstset{
+language=C,
+keepspaces=true,
+basicstyle=\ttfamily\small,
+keywordstyle=\color{darkblue},
+emphstyle=\color{red},
+numbers=left,
+numberstyle=\color{darkgray}\sffamily\mytiny,
+stepnumber=5,
+firstnumber=1,
+numberfirstline=true,
+showlines=true,
+numbersep=1.8em,
+tabsize=8,
+xleftmargin=1em,
+frame=single,
+%framerule=0pt,
+rulecolor=\color{lightgray},
+framesep=5pt,
+stringstyle=\color{darkgray},
+showstringspaces=false,
+morekeywords={size_t,uint16_t,uint32_t,uint64_t,mpz_t},
+caption=\mylstname,
+captionpos=b,
+columns=fullflexible
+}
+\def\myunderline#1{{\color{gray}{\underline{\color{black}{#1}}}}}
+\def\mytiny#1{\raise.5pt\hbox{\tiny #1}}
+
+\makeatletter 
+
+\def\reducevspace{}
+\lst@AddToHook{OnEmptyLine}{\vspace{-.2em}\def\reducevspace{\vspace{-.2em}}}
+\lst@AddToHook{EveryPar}{\reducevspace\def\reducevspace{}}
+
+\let\reallst@SkipOrPrintLabel=\lst@SkipOrPrintLabel
+\gdef\lst@numberfirstlinetrue{\let\lst@ifnumberfirstline\iftrue}
+\def\lst@SkipOrPrintLabel{\ifnum\c@lstnumber=\lst@lastline\lst@numberfirstlinetrue\fi
+\reallst@SkipOrPrintLabel}
+
+\lst@AddToHookAtTop{Init}{\def\lst@firstnumber{\lst@firstline}}
+\newcount\mylst@lastline
+\lst@AddToHook{Init}{\mylst@lastline=\lst@lastline\ifnum\mylst@lastline=9999999\wc{\lstname}\def\lst@lastline{\linecount}\fi}
+
+\DeclareRobustCommand{\mylstname}{%
+\begingroup
+\def\textendash{-}%
+\filename@parse{\lstname}%
+\texttt{\filename@base.\filename@ext}%
+\endgroup
+}
+
+\makeatother
+
+\renewcommand{\lstlistingname}{Program}
+\definecolor{darkgray}{RGB}{102,102,102}
+\definecolor{gray}{RGB}{153,153,153}
+\definecolor{lightgray}{RGB}{204,204,204}
+\definecolor{darkblue}{RGB}{0,0,153}
+
+\def\toolong{$\hspace{-100cm}$}
+
+\begin{document}
+
+\title{A benchmark for C program verification}
+\author{Freek Wiedijk \and
+Marko van Eekelen \and
+Daniil Frumin \and
+Herman Geuvers \and
+L\'eon Gondelman \and
+Robbert Krebbers \and
+Marc Schoolderman \and
+Sjaak Smetsers \and
+Freek Verbeek \and
+Beno\^it Viguier
+}
+%\institute{
+%Institute for Computing and Information Sciences \\
+%Radboud University Nijmegen \\
+%Toernooiveld 212, 6525 EC Nijmegen, The Netherlands}
+\maketitle
+
+\begin{abstract}
+\noindent
+We present twenty-five C programs, as a benchmark for
+C program verification using formal methods.
+\end{abstract}
+
+\section{Introduction}
+
+Here is a challenge for people who are interested in practical C program verification using formal methods.
+Show us how to verify the correctness of the twenty-five programs in this paper.
+
+In our Sovereign project \cite{eek:geu:sme:wie:14}, which has as its focus the safety and correctness of industrial programs, we \emph{are} interested in practical C program verification.
+Therefore we would like to have a clearer overview of frameworks for doing this.
+At first we planned to only have a few small programs for trying out the different systems (e.g., \cite{app:11}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11}, \cite{mar:07}).
+However, this then grew into this benchmark.
+
+The original idea of this benchmark was that it should be about five programs.
+It will be completely clear what these programs are when one sees the names:
+\begin{center}
+\begin{tabular}{ll}
+\lstinline|fac| & the basis \\
+\lstinline|cat| & I/O \\
+\lstinline|malloc| & linked datastructures, memory \\
+\lstinline|qsort| & arrays, recursion, function pointers \\
+\lstinline|sqrt| & floating point
+\end{tabular}
+\end{center}
+The few keywords given here indicate why we chose these five programs.
+(Obvious additions to this list are \texttt{fib} and \texttt{gcd}, but we consider these `more of the same'
+with respect to \texttt{fac}.)
+
+For each of these programs we now have several variants, ranging from very small with only a few lines of code to significant programs with reasonable behaviors.
+We intentionally intend the programs in this benchmark to be on the
+spectrum:
+\begin{center}
+\begin{picture}(200,35)
+\put(0,20){\line(1,0){200}}
+\put(0,17){\line(0,1){6}}
+\put(200,17){\line(0,1){6}}
+\put(0,10){\makebox(0,0){\emph{{\small simplest version}}}}
+\put(200,10){\makebox(0,0){\emph{{\small real life implementation}}}}
+\end{picture}
+\end{center}
+\noindent
+Altogether this gives twenty-five variations on those five programs.
+Three of these are not written by us, but are GNU implementations \cite{sta:02} that are actually used by many people.
+
+To turn this into a benchmark, then, we award four points for a proper verification of any of the programs.
+This means that it is possible to score:
+$$25 \times \mbox{$4$ points} = \mbox{$100$ points}$$
+To get all four points for a program, one should both show that it does not exhibit undefined
+behavior and prove its functional correctness.
+Points will be subtracted for the following simplifications:
+\begin{center}
+\begin{tabular}{ll}
+no verification of defined behavior & $-1$ \\
+no verification of functional correctness & $-1$ \\
+verified modified code, still valid C & $-1$ \\
+verified only a model of the code & $-2$
+\end{tabular}
+\end{center}
+For example, if one only verifies functional correctness of a model
+of the program, one only gets $4 - 1 - 2 = 1$ point ($-1$ for not verifying well-definedness,
+and $-2$ for only verifying a model) instead of four.
+We include the option to modify the code a bit (with the loss of one point),
+because we expect some frameworks to have restrictions on the code they
+can verify.
+
+To phrase this more positively, another way to state the way points are awarded is:
+\begin{center}
+\begin{tabular}{ll}
+verification of defined behavior & $+1$ \\
+verification of functional correctness & $+1$ \\
+verified valid C & $+1$ \\
+verified unmodified code & $+1$
+\end{tabular}
+\end{center}
+For the last point it is allowed to add special comments to
+the code to enable the verification, like in the ACSL language \cite{bau:cuo:fil:mar:mon:moy:pre:16}.
+
+What it means to correctly verify defined behavior, whether a tool
+models C accurately (a subject that can lead to heated debate), and how much modification to the code is allowed
+for the program to still be `the same', we intentionally leave open.
+This is a friendly challenge, and should not be taken too seriously:
+if someone wants to award him- or herself a certain number of points
+for a verification effort, they should feel free to do so.
+We primarily hope this `benchmark' will be useful for demonstrating and comparing verification frameworks on actual C code.
+
+Exactly what it \emph{means} to `verify' code like this we also intentionally
+leave open.
+One is free to decide for oneselves what the specification for the programs should be.
+In practice, we expect that this means that one has to give:
+\begin{itemize}
+\item
+Restrictions on the C implementation.
+\item
+Pre-conditions for the code, e.g., restrictions on the input.
+\item
+Specification of the behavior of the code, e.g., appropriate post-conditions.
+\end{itemize}
+The C standard \cite{iso:11} has the notion of \emph{implementation-defined
+behavior}.
+This first item is about making
+explicit under what implementations the program should work.
+
+For example, the last programs in our benchmark presuppose IEEE 754-compliant
+floating point numbers.
+While the object representation of floating point numbers is \emph{not} im\-ple\-men\-ta\-tion-defined (but unspecified),
+there is the \lstinline|__STDC_IEC_559__| pre-defined constant, which \emph{is} implementation-defined.
+The restriction on the C implementation for these programs then might be that
+te implementation has to define that constant appropriately,
+in which case we can assume that the object representation for floating point numbers matches the IEEE 754 standard.
+Similarly, there might be restrictions on the integer sizes to be `large enough', or struct layouts to be appropriate to the program.
+
+\begin{samepage}
+Here then is a list of our twenty-five programs, with a table
+of the C features that each of these programs exercises:
+\begingroup
+\def\u#1{\emph{#1}}
+\def\v#1{\begin{sideways}\u{#1}\end{sideways}}
+\def\w#1{\hspace{-2pt}\v{#1}\hspace{2pt}}
+\def\x{$\times$}
+\begin{center}
+\medskip
+\tabcolsep=2pt
+\toolong\begin{tabular}{rclcrcccccccccccccccccccccccccc}
+\v{program number} && \v{filename} & \v{type} & \v{lines of code} &$\hspace{9pt}$& \w{function calls} & \w{standard library calls} & \w{other library calls} & \w{recursion} &$\hspace{3pt}$ & \w{preprocessor: includes} & \w{preprocessor: defines} &$\hspace{3pt}$ & \w{input/output} & \w{threads} &$\hspace{3pt}$& \w{exit} & \w{break/continue} & \w{switch} & \w{labels/goto} &$\hspace{3pt}$& \w{arrays/pointers} & \w{function pointers} & \w{structs} & \w{unions} & \w{defined types} & \w{typedefs} &$\hspace{3pt}$& \w{floating point} & \w{IEEE 754 floating point}
+\\
+\noalign{\vspace{3pt}}
+1 && \lstinline|fac1.c| & C & 3 &&&&&&&&&&&&&&&&&&&&&&&&&& \\
+2 && \lstinline|fac2.c| & C & 3 &&&&&&&&&&&&&&&&&&&&&&&&&& \\
+3 && \lstinline|fac3.c| & F & 9 &&&&&&&&&&&&&&&&&&&&&&&&&& \\
+4 && \lstinline|fac4.c| & F & 5 && \x &&& \x &&&&&&&&&&&&&&&&&&&&& \\
+5 && \lstinline|fac5.c| & S & 20 &&& \x & \x &&& \x &&& \x &&&&&&&&&&&& \x &&&& \\
+6 && \lstinline|fac6.c| & S & 70 && \x & \x && \x && \x & \x && \x &&& \x &&&&&&&&& \x &&&& \\
+7 && \lstinline|cat1.c| & C & 2 &&& \x &&&&&&& \x &&&&&&&&&&&&&&&& \\
+8 && \lstinline|cat2.c| & S & 13 &&& \x &&&& \x &&& \x &&&&&&&& \x &&&& \x &&&& \\
+9 && \lstinline|cat3.c| & S & 76 && \x & \x & \x &&& \x &&& \x &&& \x & \x &&&& \x &&&& \x &&&& \\
+10 && \lstinline|coreutils/src/cat.c| & R & ${\sim}800$ && \x & \x & \x &&& \x & \x && \x &&& \x && \x & \x && \x && \x && \x &&&& \\
+11 && \lstinline|malloc1.c| & F & 16 &&&&&&&& \x &&&&&&&&&& \x &&&&&&&& \\
+12 && \lstinline|malloc2.c| & F & 28 &&&&&&&& \x &&&&&&&&&& \x &&& \x &&&&& \\
+13 && \lstinline|malloc3.c| & F & 26 &&&&&&&& \x &&&&&&&&&& \x &&& \x &&&&& \\
+14 && \lstinline|malloc4.c| & F & 180 && \x &&&&& \x & \x &&&&&&&&&& \x & \x & \x && \x & \x &&& \\
+15 && \lstinline|glibc/malloc/malloc.c| & R & $\hspace{4pt}{\sim}6000$ && \x & \x & \x &&& \x & \x && \x & \x &&&& \x & \x && \x & \x & \x &&&&&& \\
+16 && \lstinline|qsort1.c| & F & 23 && \x &&& \x &&&&&&&&&&&&& \x &&&&&&&& \\
+17 && \lstinline|qsort2.c| & F & 50 && \x &&& \x &&&&&&&&&&& \x && \x &&&&&&&& \\
+18 && \lstinline|qsort3.c| & F & 43 && \x &&& \x &&& \x &&&&&& \x &&&& \x &&&&&&&& \\
+19 && \lstinline|qsort4.c| & F & 30 && \x &&& \x && \x & \x &&&&&& \x &&&& \x & \x &&&&&&& \\
+20 && \lstinline|qsort5.c| & S & 83 && \x & \x & \x & \x && \x & \x && \x & \x &&& \x &&&& \x &&&& \x &&&& \\
+21 && \lstinline|sqrt1.c| & F & 14 &&&&&&&&&&&&&&&&&&&&&&&&& \x & \\
+22 && \lstinline|sqrt2.c| & F & 12 &&&&&&&& \x &&&&&&&&&& \x &&&&&&& \x & \x \\
+23 && \lstinline|sqrt3.c| & F & 9 &&&&&&&&&&&&&&&&&&&&& \x &&&& \x & \x \\
+24 && \lstinline|sqrt4.c| & F & 190 && \x && \x &&&& \x &&&&&& \x & \x &&&&& \x & \x & \x & \x && \x & \x \\
+25 && \lstinline|glibc/soft-fp/sqrtsf2.c|$\hspace{8pt}$ & R & ${\sim}500$ && \x && \x &&& \x & \x &&&&&& \x & \x &&&&& \x & \x & \x & \x && \x & \x \\
+\end{tabular}\toolong
+\medskip
+\end{center}
+\endgroup
+\end{samepage}
+\noindent
+There are different types of granularity in this list, ranging from only a fragment of a few isolated lines of code
+(in which case for example a Hoare triple for that fragment might be proved) to a full multi-file development that spans multiple directories.
+The four types are indicated with the following letters:
+\begin{center}
+\begin{tabular}{ll}
+C & code fragment \\
+F & one or more functions \\
+S & single source file \\
+R & real life code, multiple source files
+\end{tabular}
+\end{center}
+The numbers of lines for the GNU programs are only rough indications.
+There are \emph{many} files (including many header files) involved in these
+programs, and we did not establish exactly which files are needed for
+these programs.
+(In the list we only list the primary source file, but the verification should
+include all other relevant source files.)
+Also, the exact line counts will be dependent on the version of the
+software.
+We do not want to restrict the version that should be used for this
+challenge, but while developing this benchmark we looked at version
+8.27 of \texttt{coreutils}, and version 2.24.90 of \texttt{glibc}.
+
+The listings in this paper only show the relevant parts of the programs.
+These are the parts that should be verified.
+However, in case it is useful to take other parts of these programs into
+account, that is of course allowed.
+Each of these programs (apart from two of the three GNU ones) is a program that can be compiled on its own,
+so each program has a \texttt{main} function in its file too.
+
+\section{Factorial}
+
+\subsection{A simple for loop}
+The very first program fragment is a \texttt{for} loop,
+multiplying the numbers from 1 to \texttt{n}:
+\lstinputlisting[linerange={6-8}]{../fac/fac1.c}
+This program has a straight-forward counterpart in most
+programming languages, so it should be easy to model it in any
+system.
+The declarations of \texttt{f}, \texttt{i} and \texttt{n} are not part of this
+fragment, but of course should be taken into account when verifying this.
+
+In practice, this program will exhibit integer overflow when \texttt{n} is too large.
+With 32-bit integers this happens for $\texttt{n}\ge 13$.
+The exact way this is specified in the pre-condition is left open.
+For example both $\mbox{\lstinline{n}} < 13$ and $\mbox{\lstinline{n}}! \le \mbox{\lstinline{INT_MAX}}$
+might be reasonable choices for this.
+
+\subsection{Turing's program}
+The second program fragment is very similar to the previous one, but is a bit more involved.
+This is a C rendering of a program by Alan Turing from his 1949 paper \cite{tur:49}
+on program verification:
+\lstinputlisting[linerange={6-8}]{../fac/fac2.c}
+This calculates factorial without using multiplication.
+The original version of this program was written for the Manchester Mark 1 computer \cite{wie:16}, but as far as we know no C compiler for that computer exists.
+
+\subsection{A function}
+We now wrap the code in a function.
+This time the verification has to be about pre- and post-conditions
+of C functions, not of isolated statements:
+\lstinputlisting[linerange={1-9},emph={fac,main}]{../fac/fac3.c}
+We used more `C-like' idiom in this example.
+For example, the update of the counter and the multiplication now
+happen together in a single statement, making this example slightly less trivial.
+
+\subsection{Recursion}
+We claimed that the for loop has a counterpart in most programming languages,
+but this might not hold for functional languages.
+Here is the obvious recursive definition of the factorial function in C:
+\lstinputlisting[linerange={1-5},emph={fac,main}]{../fac/fac4.c}
+This program might overflow its stack when \texttt{n} is too large
+(although we did not succeed in having GCC compile this to a program
+with this behavior).
+The C standard does not address that issue, but the verification of this
+code might take this into account in its pre-condition.
+
+\subsection{Big numbers}
+Until now the output of the code is meaningless for most inputs because of overflow.
+The program might as well just index in a small array to get the appropriate
+output.
+Here is a version of the program that uses the GMP library \cite{gra:16} to
+compute factorial for larger inputs:
+\lstinputlisting[emph={main}]{../fac/fac5.c}
+A specification of this program should also contain appropriate specifications
+for the GMP types and functions being used here.
+This program computes the factorial of one million (a number of 5,565,709 decimal digits)
+in a few minutes.
+
+\subsection{Big numbers without a library}
+Here is a simple implementation of factorial with big number arithmetic without
+using an external library:
+\lstinputlisting[emph={calc_fac,print_digits,main}]{../fac/fac6.c}
+The output of the digits does not use \texttt{printf}, but prints
+the digits individually using \texttt{putchar}.
+However, for the error handling \texttt{fprintf} is used.
+
+This program is about ten times slower than the GMP version.
+
+\section{Cat}
+
+\subsection{The simplest input/output program}
+Input/output is underrated in C verification.
+For example, in the CH$_2$O semantics from Robbert Krebbers' very thorough PhD thesis \cite{kre:15} this
+is not properly modelled.
+However, we think that input/output (the way that
+software interacts with its environment) is a fundamental property of a program
+and should be treated as such.
+
+The simplest program with both input and output just copies its input to its output.
+In Unix this program is called \texttt{cat}, and the simplest C implementation of this behavior is:
+\lstinputlisting[linerange={8-9}]{../cat/cat1.c}
+How the functional behavior of this program should be {specified} is not addressed in this paper.
+
+\subsection{Buffering}
+In practice the previous program is slow, even though \texttt{getchar} internally uses a buffer.
+By putting an explicit buffer in the program, it gets as fast as the GNU implementation of \texttt{cat}:
+\lstinputlisting[emph={main}]{../cat/cat2.c}
+This program uses the \lstinline|size_t| type, because that is what the \lstinline|fread| function returns and the \lstinline|fwrite| function expects.
+Therefore the verification framework should know about this type, in order to be able to verify this example.
+
+This code is similar to the example program from \cite{gun:myr:kum:nor:17}.
+
+\subsection{A simplified version of the real program}
+Here is a simplified version of the GNU implementation of \texttt{cat}.
+The main missing functionality is that there are no command line options (`flags').
+Also, we simplified the code quite a bit:
+\lstinputlisting[emph={error,main}]{../cat/cat3.c}
+This code does not use the standard C library functions
+\texttt{fread} and \texttt{fwrite}, but instead
+uses the basic Unix system calls \texttt{read} and \texttt{write}.
+Therefore, the code includes the \texttt{unistd.h} header file,
+and should be verified with a respect to a specification of a Unix
+environment.
+
+\subsection{The GNU version}
+This is the real program that the previous program was a simplified version of.
+When on a Linux system one runs \texttt{cat}, this is the code that is
+executed.
+
+The file \texttt{coreutils-8.27/src/cat.c} contains 767 lines of code,
+but that code includes eight GNU header files,
+links to a function for handling command line options, and uses
+the GNU function \texttt{xmalloc}, a wrapper around the C standard library function
+\texttt{malloc} which is defined in a different file.
+\addtocounter{lstlisting}{1}
+
+\section{Allocate memory}
+\subsection{The simplest allocator}
+Here is the simplest memory allocator for C possible.
+It just cuts off pieces of memory and does not support \texttt{free}:
+\lstinputlisting[linerange={1-16},emph={malloc}]{../malloc/malloc1.c}
+This code does not satisfy the alignment restrictions on the real
+C \texttt{malloc}.
+All that is guaranteed is that a block with the appropriate number of bytes is
+returned.
+
+This code is very similar to the memory allocator verified in \cite{ben:06,ben:06:1}.
+
+\subsection{A typed allocator}
+If one does not need arrays, a memory allocator for C is simple to write.
+Here is an allocator that allocates objects of a given type \texttt{T}.
+(The definition of this type is intentionally not given in the code
+fragment shown, as it should be irrelevant for the verification.)
+
+The code both has an array (to allocate from) and a linked list (for keeping
+track of the freed objects), which makes it a nice target for separation logic:
+\lstinputlisting[linerange={6-33},emph={T_alloc,T_free}]{../malloc/malloc2.c}
+
+\subsection{A typed allocator that does not need pointer casts}
+The previous program needs to get a pointer to a \texttt{union} \texttt{cell}
+from a pointer to the allocated \texttt{T} object that is in that cell.
+According to the C standard \cite{iso:11} this is allowed, as it says in 6.7.2.1/15:
+\begin{quote}
+[\,\dots]
+A pointer to a union object, suitably converted,
+points to each of its members (or if a member is a
+bit-field, then to the unit in which it resides), and
+vice versa.
+[\,\dots]
+\end{quote}
+However, in some formal versions of the C semantics \cite{kre:16} this is not allowed.
+Therefore, here is a variant of this code where the user needs to keep
+track of the \texttt{union} \texttt{cell} for him- or herself,
+and that problem is not present:
+\lstinputlisting[linerange={6-31},emph={T_alloc,T_free}]{../malloc/malloc3.c}
+
+\subsection{A simplified version of the real program}
+Here is a very much simplified version of the GNU implementation of \texttt{malloc} and \texttt{free} in \texttt{glibc}:
+\lstinputlisting[linerange={7-186},emph={malloc_init_state,free_unsorted_chunk,malloc,free,main}]{../malloc/malloc4.c}
+Some features of the real GNU malloc that are missing from this version:
+\begin{itemize}
+\item no fastbins
+\item just a single regular bin
+\item no bitmap to quickly find non-empty bins (not needed, as there is just one bin)
+\item no \texttt{sbrk} to get more memory (just one static array)
+\item memory never returned to the system (the \lstinline|av_top| pointer never decreases)
+\item no memory mapped blocks
+\item no thread-awareness
+\end{itemize}
+However, the free list in the one bin is still kept in sorted order, and still uses
+the \lstinline|fd_nextsize| and \lstinline|bk_nextsize| pointers to search
+for an appropriate block.
+
+\subsection{The GNU version}
+And again, the last program of this section is the full GNU implementation of \texttt{malloc} and \texttt{free} in \texttt{glibc}.
+The main file \lstinline|glibc/malloc/malloc.c| in version 2.24.90 of \texttt{glibc} has 5,318 lines of code, but this file depends on many other files.
+
+The file contains the sentence:
+\begin{quote}
+The implementation is in straight, hand-tuned ANSI C.
+\end{quote}
+Exactly what it means to say that this code is `ANSI C', and whether this is actually true, is an interesting question.
+\addtocounter{lstlisting}{1}
+
+\section{Quicksort}
+\subsection{Straight-forward quicksort}\label{qsort1}
+Here is a very straight-forward version of a quicksort function for
+an array of doubles:
+\lstinputlisting[linerange={4-26},emph={swap,quicksort,main}]{../qsort/qsort1.c}
+This function of course has to be called with \lstinline|quicksort(0, N - 1)|.
+
+We tried to make this code as simple as possible.
+For example it contains no \lstinline|return| or \lstinline|break| and only has a single swap.
+
+There is a variant of this in which there only is a single comparison between
+\lstinline|i| and \lstinline|j| (with the bounds in the recursive
+call different), but that really makes use of the fact
+that we used \lstinline|a[n]| for the pivot.
+For that reason we decided not to take that variant here, even though
+it is still shorter.
+The version here also works with different choices for the pivot,
+like taking the median or mean of some elements in the array.
+
+This program has the property that if the array is already sorted, then it needs stack space for the recursion proportional to the length of the array.
+On a Linux system with a (default) \texttt{stacksize} of 8MB, the full program, which
+has \texttt{N} equal to 666,666, fails after about three minutes with the error:
+\begin{quote}
+\lstinline|segmentation fault|
+%\lstinline|zsh: segmentation fault  ./qsort1} \\
+%\lstinline|./qsort1  416.58s user 0.52s system 61% cpu 11:16.09 total|
+\end{quote}
+It would be nice if the verification of this program would be compatible with this behavior, i.e., that it would not be possible to prove this program to be correct for too large \texttt{N}.
+
+\subsection{Hoare's version of quicksort}
+Here is a variation on the previous program.
+This is a C rendering of the programs in the original publication on
+quicksort by Tony Hoare
+\cite{hoa:61}:
+\lstinputlisting[linerange={17-66},emph={exchange,random,partition,quicksort,main}]{../qsort/qsort2.c}
+This program uses \lstinline{goto} instead of \lstinline{break}.
+The original Algol 60 version of this code uses the call-by-name feature of Algol 60 (which is
+more like macro expansion),
+which is modeled here by giving the \lstinline{partition} function pointers
+to the variables to be modified.
+
+\subsection{The algorithm in the real program}
+If we take the GNU implementation of quicksort, and simplify it to
+only apply to arrays of doubles, this is what one gets:
+\lstinputlisting[linerange={1-43},emph={SWAP,quicksort,main}]{../qsort/qsort3.c}
+This is just a variation on the previous program, but it has
+a few nice features, like using a macro for swapping elements in the array.
+One probably wants to prove this \emph{macro} correct,
+which means that just verifying the macro-expanded version of the
+program will not be too attractive in this case.
+
+\subsection{Quicksort on arbitrary types}
+Here is a version of the simple version of quicksort that
+we gave in \ref{qsort1}, but this time for arbitrary types, so this is an
+implementation of the interface of the \lstinline{qsort} function in the C standard library:
+\lstinputlisting[linerange={1-30},emph={swap,qsort,main}]{../qsort/qsort4.c}
+Notable features of this program are function pointers,
+\lstinline|(void *)| pointers, and the use of \lstinline|memcpy| to
+copy C objects.
+
+\subsection{Parallel quicksort}
+Finally, here is a version of quicksort that uses threads.
+The basic idea of this program is that at most \lstinline|THREADS| threads will be
+running.
+Once a recursive call gets a piece of the array of which the size is
+below \lstinline|THRESHOLD| (which
+means the data will fit in the cache of one of the cores), a separate
+thread will be used for this if one is available.
+The count of free threads is kept in the variable \lstinline|available|
+for which a mutex is used when updating it.
+
+We did not use C11 threads for this, because we did not have a good implementation of it available.
+Instead this uses the pthreads library.
+The means the program might need to be compiled
+with \lstinline{-lpthread}.
+
+Again, algorithmically this is just the simple algorithm from \ref{qsort1}:
+\lstinputlisting[emph={run_quicksort,quicksort,main}]{../qsort/qsort5.c}
+
+\section{Square root}
+\subsection{Newton's approximation}
+The last class of examples in this benchmark are implementations
+of the square root function on single precision floating point numbers.
+Here is a simple version of an implementation that uses the Newton method:
+\lstinputlisting[linerange={1-14},emph={sqrt_newton,main}]{../sqrt/sqrt1.c}
+This will not always give exactly the right answer according to the IEEE 754
+standard, but it will be close.
+If a \lstinline|float| has finitely many different representations
+(which one might expect the C standard would enforce, because there are only
+finitely many different object representations), then this program will
+always terminate.
+
+It is interesting exactly what is provable about this program
+in a C implementation where one does not know how the floating
+point implementation works in detail.
+Maybe if there are some guarantees about relative error bounds
+of the arithmetic operations, an error bound on the result of this
+function can be proved.
+
+\subsection{An approximation of square root by bit shifting}
+The IEEE 754 representation of floating point numbers allows
+for an approximation to the square root function
+that can be calculated extremely fast.
+The counterpart for the inverse square root function (both square
+root and inverse square root
+use exactly the same trick) is known
+as `the \lstinline|0x5f3759df| method',
+after the magic constant that appears in it.
+(Comments in the first program that had this constant
+in it were \emph{evil floating point bit level hacking} and \emph{what the fuck?})
+
+The implementation just consists of considering the bits of the number by casting it to an integer,
+shifting those bits one place to the right, and then adding a magic constant to that integer representation:
+\lstinputlisting[linerange={1-12},emph={sqrt_approx,main}]{../sqrt/sqrt2.c}
+It is surprising that this gives a sensible result.
+One is shifting one of the bits of the exponent into a bit of the
+mantissa, how is that going to make sense?
+However, when analyzing it more closely \cite{bli:97}, it turns
+out that this \emph{does} make sense, and that for sufficiently large inputs, it gives a continuous piecewise linear function that 
+approximates the square root function quite well (it is exact
+on powers of four, see the graph in Fig.~\ref{sqrt_approx}.)
+The maximum error occurs when the argument is twice a power of four, and the
+relative error on those values is $(1\frac{1}{2} - \sqrt{2})/\sqrt{2} = \frac{3}{4}\sqrt{2} - 1 \approx 6.0660\% \approx 2^{-4.0431}$,
+which means that generally the first three bits of the fractional part will be correct.
+\begin{figure}
+\begin{center}
+\includegraphics[width=.9\textwidth]{sqrt_approx}
+\end{center}
+\caption{The graph of \lstinline|sqrt_approx|.}\label{sqrt_approx}
+\end{figure}
+
+Unlike the code in the next section, this function also makes sense if \lstinline|float|s
+do not have 32 bits single precision.
+All that is needed is that the bits are laid out in the style of a
+IEEE 754 representation.
+As was noted before, this can be established by the implementation-defined
+property of \lstinline|__STDC_IEC_559__| having an appropriate definition.
+
+We had some discussion whether to include this program in our benchmark.
+We wanted our examples to be `realistic', and this seems more of
+a cute hack than something resembling realistic code.
+Also, nowadays square root is supported by hardware, and getting a good approximation
+as a start for Newton's method is not really important anymore.
+However, this program is about the bit representation of floating point
+numbers, and about using casts to reinterpret one type as another (which is
+a common thing in C).
+For this reason we decided to still include this
+as one of our examples.
+
+\subsection{An approximation of square root by bit shifting that does not violate effective types}\label{sqrt3}
+The previous program uses type casts to get at the bits of a floating point number,
+in order to be able to shift them.
+However, that violates the \emph{effective type} rules, as described
+in 6.5/7 of the C11 standard.
+In fact, when compiled using GCC with the \lstinline|-Wall| and \lstinline|-O3| flags,
+the compiler emits the warning:
+\begin{quote}
+\lstinline[language=]|warning: dereferencing type-punned pointer will break strict-|\\
+\lstinline[language=]|aliasing rules [-Wstrict-aliasing]|
+\end{quote}
+We now give a version of the same program that uses a \lstinline|union| to
+get at the bits of the \lstinline|float|, which means it
+does not suffer from this problem:
+\lstinputlisting[linerange={1-9},emph={sqrt_approx,main}]{../sqrt/sqrt3.c}
+Using a \lstinline|union| to get at the bits of an object is allowed by the C11 standard, as in
+footnote 95 of 6.5.2.3/3 it reads:
+\begin{quote}
+If the member used to read the contents of a union object is not the same as the member last used to
+store a value in the object, the appropriate part of the object representation of the value is reinterpreted
+as an object representation in the new type as described in 6.2.6 (a process sometimes called ``type
+punning''). This might be a trap representation.
+\end{quote}
+When using \lstinline|union|s, it is harder to write the constant to be
+added to the expression in a way that it will work whatever
+the number of bits in the floating point representation, and
+in such a way that the compiler will insert it as a constant in the code
+at compile time.
+To keep the program small, we therefore expanded this constant to its value for 32-bit
+floating point numbers: \lstinline|0x1fc00000|. %, or the decimal number 532,676,608.
+This means that to work correctly, this program needs an implementation with 32-bit IEEE 754 \lstinline|float|s.
+
+\subsection{A simplified version of a serious implementation}
+The GNU library \texttt{glibc} contains software implementations of
+the IEEE 754 operations in the subdirectory \texttt{soft-fp}.
+In the case of square root, the algorithm used is the square root
+analog of long division.
+The GNU code for this consists of a whole stack of macro definitions.
+When expanding all these definitions, and simplifying everything quite a bit, one gets:
+\lstinputlisting[linerange={1-190},emph={__sqrtsf2,main}]{../sqrt/sqrt4.c}
+This code implements IEEE 754 behavior, but (as the primary simplification)
+only implements the default rounding mode.
+The full GNU version supports the other rounding modes as well.
+Also, the full version implements more possible variant behaviors on not-a-numbers.
+
+Most of this code is about getting at the bits at the start and reassembling the
+floating point number at the end, and about
+handling various special cases like infinities, not-a-numbers, and
+denormalized numbers.
+The actual algorithm for the `long division' analog
+is in lines 103--125.
+
+\subsection{The GNU version}
+And the last program in our verification benchmark is the actual implementation
+of square root in \texttt{libc/soft-fp}.
+That code is a bit obfuscated, because many of the macros implement the operations
+for different floating point sizes at the same time.
+The function that should be verified is \lstinline|__sqrtsf2|,
+implemented in the file \lstinline|sqrtsf2.c|:
+\lstinputlisting[linerange={31-49},emph={__sqrtsf2}]{../sqrt/sqrtsf2.c}
+Of course the macros defined through the \lstinline|#include| lines pull in lots of other code from other files, and expand this program significantly.
+
+\section{Discussion}
+We can imagine different reactions to the collection of programs that we present here:
+\begin{itemize}
+\item
+These programs are too easy.
+
+\item
+These programs are too hard.
+
+\item
+These programs are not too easy or too hard, but not interesting.
+
+\end{itemize}
+\noindent
+In the first case we would like to see how to verify them.
+If they are easy, showing how to do that should not be much work, right?
+In the second case we would like to know how far the technology
+currently reaches.
+We intentionally provided a spectrum from very small fragments
+to larger pieces of code, so if you have the second reaction then just show us how to do the easier ones.
+
+However, in the third case we disagree.
+This is based on actual programs from the GNU project,
+and as such are representative of real C programming.
+Why is it not interesting to be able to verify what
+to us are characteristic C programs?
+
+It was tempting to also include programs in our benchmark that are cute and/or dazzling.
+(The square root approximation by bit shifting was borderline in this respect.)
+For instance, consider two possible additions to the factorial
+section,
+the first being a surprising application of the preprocessor:
+\lstinputlisting{../fac/facx.c}
+\lstinputlisting[language=]{../fac/facy.c}
+(it turns out that the factorial is calculated here at compile time),
+and the second being a price winning submission to the international
+obfuscated C code contest
+(shown on the next page: it implements a functional language and then does the recursion by
+evaluating Church's $Y$-combinator.)
+However, we do not consider these two programs representative of
+real life C programming, so we resisted the temptation to include them in our benchmark.
+
+There are twenty-five programs in this paper, and there are multiple
+frameworks for formal C verification out there, like the ones described
+in \cite{app:11}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11} and \cite{mar:07}.
+We think this could be a great source for student projects.
+Just say for example: `prove the correctness of program number three in framework
+number one' (actually something close to that one already has been done, see the slides of \cite{wie:16:1}).
+That way we will get a good comparison of what are the strengths and
+weaknesses of the different current approaches for formal C verification.
+
+\bibliographystyle{plain}
+\bibliography{bench}
+
+\end{document}
