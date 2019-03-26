@@ -295,7 +295,7 @@ so each program has a \texttt{main} function in its file too.
 \subsection{A simple for loop}
 The very first program fragment is a \texttt{for} loop,
 multiplying the numbers from 1 to \texttt{n}:
-\lstinputlisting[linerange={6-8}]{../fac/fac1.c}
+\lstinputlisting[linerange={6-8}]{../src/fac/fac1.c}
 This program has a straight-forward counterpart in most
 programming languages, so it should be easy to model it in any
 system.
@@ -312,7 +312,7 @@ might be reasonable choices for this.
 The second program fragment is very similar to the previous one, but is a bit more involved.
 This is a C rendering of a program by Alan Turing from his 1949 paper \cite{tur:49}
 on program verification:
-\lstinputlisting[linerange={6-8}]{../fac/fac2.c}
+\lstinputlisting[linerange={6-8}]{../src/fac/fac2.c}
 This calculates factorial without using multiplication.
 The original version of this program was written for the Manchester Mark 1 computer \cite{wie:16}, but as far as we know no C compiler for that computer exists.
 
@@ -320,7 +320,7 @@ The original version of this program was written for the Manchester Mark 1 compu
 We now wrap the code in a function.
 This time the verification has to be about pre- and post-conditions
 of C functions, not of isolated statements:
-\lstinputlisting[linerange={1-9},emph={fac,main}]{../fac/fac3.c}
+\lstinputlisting[linerange={1-9},emph={fac,main}]{../src/fac/fac3.c}
 We used more `C-like' idiom in this example.
 For example, the update of the counter and the multiplication now
 happen together in a single statement, making this example slightly less trivial.
@@ -329,7 +329,7 @@ happen together in a single statement, making this example slightly less trivial
 We claimed that the for loop has a counterpart in most programming languages,
 but this might not hold for functional languages.
 Here is the obvious recursive definition of the factorial function in C:
-\lstinputlisting[linerange={1-5},emph={fac,main}]{../fac/fac4.c}
+\lstinputlisting[linerange={1-5},emph={fac,main}]{../src/fac/fac4.c}
 This program might overflow its stack when \texttt{n} is too large
 (although we did not succeed in having GCC compile this to a program
 with this behavior).
@@ -342,7 +342,7 @@ The program might as well just index in a small array to get the appropriate
 output.
 Here is a version of the program that uses the GMP library \cite{gra:16} to
 compute factorial for larger inputs:
-\lstinputlisting[emph={main}]{../fac/fac5.c}
+\lstinputlisting[emph={main}]{../src/fac/fac5.c}
 A specification of this program should also contain appropriate specifications
 for the GMP types and functions being used here.
 This program computes the factorial of one million (a number of 5,565,709 decimal digits)
@@ -351,7 +351,7 @@ in a few minutes.
 \subsection{Big numbers without a library}
 Here is a simple implementation of factorial with big number arithmetic without
 using an external library:
-\lstinputlisting[emph={calc_fac,print_digits,main}]{../fac/fac6.c}
+\lstinputlisting[emph={calc_fac,print_digits,main}]{../src/fac/fac6.c}
 The output of the digits does not use \texttt{printf}, but prints
 the digits individually using \texttt{putchar}.
 However, for the error handling \texttt{fprintf} is used.
@@ -370,13 +370,13 @@ and should be treated as such.
 
 The simplest program with both input and output just copies its input to its output.
 In Unix this program is called \texttt{cat}, and the simplest C implementation of this behavior is:
-\lstinputlisting[linerange={8-9}]{../cat/cat1.c}
+\lstinputlisting[linerange={8-9}]{../src/cat/cat1.c}
 How the functional behavior of this program should be {specified} is not addressed in this paper.
 
 \subsection{Buffering}
 In practice the previous program is slow, even though \texttt{getchar} internally uses a buffer.
 By putting an explicit buffer in the program, it gets as fast as the GNU implementation of \texttt{cat}:
-\lstinputlisting[emph={main}]{../cat/cat2.c}
+\lstinputlisting[emph={main}]{../src/cat/cat2.c}
 This program uses the \lstinline|size_t| type, because that is what the \lstinline|fread| function returns and the \lstinline|fwrite| function expects.
 Therefore the verification framework should know about this type, in order to be able to verify this example.
 
@@ -386,7 +386,7 @@ This code is similar to the example program from \cite{gun:myr:kum:nor:17}.
 Here is a simplified version of the GNU implementation of \texttt{cat}.
 The main missing functionality is that there are no command line options (`flags').
 Also, we simplified the code quite a bit:
-\lstinputlisting[emph={error,main}]{../cat/cat3.c}
+\lstinputlisting[emph={error,main}]{../src/cat/cat3.c}
 This code does not use the standard C library functions
 \texttt{fread} and \texttt{fwrite}, but instead
 uses the basic Unix system calls \texttt{read} and \texttt{write}.
@@ -410,7 +410,7 @@ the GNU function \texttt{xmalloc}, a wrapper around the C standard library funct
 \subsection{The simplest allocator}
 Here is the simplest memory allocator for C possible.
 It just cuts off pieces of memory and does not support \texttt{free}:
-\lstinputlisting[linerange={1-16},emph={malloc}]{../malloc/malloc1.c}
+\lstinputlisting[linerange={1-16},emph={malloc}]{../src/malloc/malloc1.c}
 This code does not satisfy the alignment restrictions on the real
 C \texttt{malloc}.
 All that is guaranteed is that a block with the appropriate number of bytes is
@@ -426,7 +426,7 @@ fragment shown, as it should be irrelevant for the verification.)
 
 The code both has an array (to allocate from) and a linked list (for keeping
 track of the freed objects), which makes it a nice target for separation logic:
-\lstinputlisting[linerange={6-33},emph={T_alloc,T_free}]{../malloc/malloc2.c}
+\lstinputlisting[linerange={6-33},emph={T_alloc,T_free}]{../src/malloc/malloc2.c}
 
 \subsection{A typed allocator that does not need pointer casts}
 The previous program needs to get a pointer to a \texttt{union} \texttt{cell}
@@ -444,11 +444,11 @@ However, in some formal versions of the C semantics \cite{kre:16} this is not al
 Therefore, here is a variant of this code where the user needs to keep
 track of the \texttt{union} \texttt{cell} for him- or herself,
 and that problem is not present:
-\lstinputlisting[linerange={6-31},emph={T_alloc,T_free}]{../malloc/malloc3.c}
+\lstinputlisting[linerange={6-31},emph={T_alloc,T_free}]{../src/malloc/malloc3.c}
 
 \subsection{A simplified version of the real program}
 Here is a very much simplified version of the GNU implementation of \texttt{malloc} and \texttt{free} in \texttt{glibc}:
-\lstinputlisting[linerange={7-186},emph={malloc_init_state,free_unsorted_chunk,malloc,free,main}]{../malloc/malloc4.c}
+\lstinputlisting[linerange={7-186},emph={malloc_init_state,free_unsorted_chunk,malloc,free,main}]{../src/malloc/malloc4.c}
 Some features of the real GNU malloc that are missing from this version:
 \begin{itemize}
 \item no fastbins
@@ -478,7 +478,7 @@ Exactly what it means to say that this code is `ANSI C', and whether this is act
 \subsection{Straight-forward quicksort}\label{qsort1}
 Here is a very straight-forward version of a quicksort function for
 an array of doubles:
-\lstinputlisting[linerange={4-26},emph={swap,quicksort,main}]{../qsort/qsort1.c}
+\lstinputlisting[linerange={4-26},emph={swap,quicksort,main}]{../src/qsort/qsort1.c}
 This function of course has to be called with \lstinline|quicksort(0, N - 1)|.
 
 We tried to make this code as simple as possible.
@@ -508,7 +508,7 @@ Here is a variation on the previous program.
 This is a C rendering of the programs in the original publication on
 quicksort by Tony Hoare
 \cite{hoa:61}:
-\lstinputlisting[linerange={17-66},emph={exchange,random,partition,quicksort,main}]{../qsort/qsort2.c}
+\lstinputlisting[linerange={17-66},emph={exchange,random,partition,quicksort,main}]{../src/qsort/qsort2.c}
 This program uses \lstinline{goto} instead of \lstinline{break}.
 The original Algol 60 version of this code uses the call-by-name feature of Algol 60 (which is
 more like macro expansion),
@@ -518,7 +518,7 @@ to the variables to be modified.
 \subsection{The algorithm in the real program}
 If we take the GNU implementation of quicksort, and simplify it to
 only apply to arrays of doubles, this is what one gets:
-\lstinputlisting[linerange={1-43},emph={SWAP,quicksort,main}]{../qsort/qsort3.c}
+\lstinputlisting[linerange={1-43},emph={SWAP,quicksort,main}]{../src/qsort/qsort3.c}
 This is just a variation on the previous program, but it has
 a few nice features, like using a macro for swapping elements in the array.
 One probably wants to prove this \emph{macro} correct,
@@ -529,7 +529,7 @@ program will not be too attractive in this case.
 Here is a version of the simple version of quicksort that
 we gave in \ref{qsort1}, but this time for arbitrary types, so this is an
 implementation of the interface of the \lstinline{qsort} function in the C standard library:
-\lstinputlisting[linerange={1-30},emph={swap,qsort,main}]{../qsort/qsort4.c}
+\lstinputlisting[linerange={1-30},emph={swap,qsort,main}]{../src/qsort/qsort4.c}
 Notable features of this program are function pointers,
 \lstinline|(void *)| pointers, and the use of \lstinline|memcpy| to
 copy C objects.
@@ -551,14 +551,14 @@ The means the program might need to be compiled
 with \lstinline{-lpthread}.
 
 Again, algorithmically this is just the simple algorithm from \ref{qsort1}:
-\lstinputlisting[emph={run_quicksort,quicksort,main}]{../qsort/qsort5.c}
+\lstinputlisting[emph={run_quicksort,quicksort,main}]{../src/qsort/qsort5.c}
 
 \section{Square root}
 \subsection{Newton's approximation}
 The last class of examples in this benchmark are implementations
 of the square root function on single precision floating point numbers.
 Here is a simple version of an implementation that uses the Newton method:
-\lstinputlisting[linerange={1-14},emph={sqrt_newton,main}]{../sqrt/sqrt1.c}
+\lstinputlisting[linerange={1-14},emph={sqrt_newton,main}]{../src/sqrt/sqrt1.c}
 This will not always give exactly the right answer according to the IEEE 754
 standard, but it will be close.
 If a \lstinline|float| has finitely many different representations
@@ -587,7 +587,7 @@ in it were \emph{evil floating point bit level hacking} and \emph{what the fuck?
 
 The implementation just consists of considering the bits of the number by casting it to an integer,
 shifting those bits one place to the right, and then adding a magic constant to that integer representation:
-\lstinputlisting[linerange={1-12},emph={sqrt_approx,main}]{../sqrt/sqrt2.c}
+\lstinputlisting[linerange={1-12},emph={sqrt_approx,main}]{../src/sqrt/sqrt2.c}
 It is surprising that this gives a sensible result.
 One is shifting one of the bits of the exponent into a bit of the
 mantissa, how is that going to make sense?
@@ -637,7 +637,7 @@ the compiler emits the warning:
 We now give a version of the same program that uses a \lstinline|union| to
 get at the bits of the \lstinline|float|, which means it
 does not suffer from this problem:
-\lstinputlisting[linerange={1-9},emph={sqrt_approx,main}]{../sqrt/sqrt3.c}
+\lstinputlisting[linerange={1-9},emph={sqrt_approx,main}]{../src/sqrt/sqrt3.c}
 Using a \lstinline|union| to get at the bits of an object is allowed by the C11 standard, as in
 footnote 95 of 6.5.2.3/3 it reads:
 \begin{quote}
@@ -662,7 +662,7 @@ In the case of square root, the algorithm used is the square root
 analog of long division.
 The GNU code for this consists of a whole stack of macro definitions.
 When expanding all these definitions, and simplifying everything quite a bit, one gets:
-\lstinputlisting[linerange={1-190},emph={__sqrtsf2,main}]{../sqrt/sqrt4.c}
+\lstinputlisting[linerange={1-190},emph={__sqrtsf2,main}]{../src/sqrt/sqrt4.c}
 This code implements IEEE 754 behavior, but (as the primary simplification)
 only implements the default rounding mode.
 The full GNU version supports the other rounding modes as well.
@@ -682,7 +682,7 @@ That code is a bit obfuscated, because many of the macros implement the operatio
 for different floating point sizes at the same time.
 The function that should be verified is \lstinline|__sqrtsf2|,
 implemented in the file \lstinline|sqrtsf2.c|:
-\lstinputlisting[linerange={31-49},emph={__sqrtsf2}]{../sqrt/sqrtsf2.c}
+\lstinputlisting[linerange={31-49},emph={__sqrtsf2}]{../src/sqrt/sqrtsf2.c}
 Of course the macros defined through the \lstinline|#include| lines pull in lots of other code from other files, and expand this program significantly.
 
 \section{Discussion}
@@ -717,8 +717,8 @@ It was tempting to also include programs in our benchmark that are cute and/or d
 For instance, consider two possible additions to the factorial
 section,
 the first being a surprising application of the preprocessor:
-\lstinputlisting{../fac/facx.c}
-\lstinputlisting[language=]{../fac/facy.c}
+\lstinputlisting{../src/fac/facx.c}
+\lstinputlisting[language=]{../src/fac/facy.c}
 (it turns out that the factorial is calculated here at compile time),
 and the second being a price winning submission to the international
 obfuscated C code contest

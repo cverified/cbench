@@ -13,13 +13,13 @@ T_alloc()
 {
   union cell *ptr = first_free;
 
-  if (ptr) {
+  if (ptr)
     first_free = first_free->next_free;
-    return ptr;
+  else {
+    if (limit >= heap + HEAPSIZE)
+      return 0;
+    ptr = limit++;
   }
-  if (limit >= heap + HEAPSIZE)
-    return 0;
-  ptr = limit++;
   return ptr;
 }
 
