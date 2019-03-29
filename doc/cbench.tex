@@ -83,7 +83,7 @@ columns=fullflexible
 \begin{document}
 
 \title{A benchmark for C program verification}
-\author{Freek Wiedijk \and
+\author{%
 Marko van Eekelen \and
 Daniil Frumin \and
 Herman Geuvers \and
@@ -92,18 +92,27 @@ Robbert Krebbers \and
 Marc Schoolderman \and
 Sjaak Smetsers \and
 Freek Verbeek \and
-Beno\^it Viguier
+Beno\^it Viguier \and
+Freek Wiedijk
 }
 %\institute{
 %Institute for Computing and Information Sciences \\
 %Radboud University Nijmegen \\
-%Toernooiveld 212, 6525 EC Nijmegen, The Netherlands}
+%Toernooiveld 212, 6525 EC Nijmegen, The Netherlands
+%}
+\date{April 1, 2019}
 \maketitle
 
 \begin{abstract}
 \noindent
 We present twenty-five C programs, as a benchmark for
 C program verification using formal methods.
+%
+This benchmark can be used for system demonstration,
+for comparison of verification effort between systems,
+and as a friendly competition.
+For this last purpose, there is a scoring system in which
+a system can score up to a hundred points.
 \end{abstract}
 
 \section{Introduction}
@@ -112,8 +121,10 @@ Here is a challenge for people who are interested in practical C program verific
 Show us how to verify the correctness of the twenty-five programs in this paper.
 The sources of these programs can be found at:
 \begin{center}
-\url{http://github.com/freekwiedijk/cbench} \\
-\url{http://www.cs.ru.nl/~freek/cbench/} \\
+\begin{tabular}{l}
+\url{https://github.com/freekwiedijk/cbench/} \\
+\url{https://www.cs.ru.nl/~freek/cbench/}
+\end{tabular}
 \end{center}
 In our Sovereign project \cite{eek:geu:sme:wie:14}, which has as its focus the safety and correctness of industrial programs, we \emph{are} interested in practical C program verification.
 Therefore we would like to have a clearer overview of frameworks for doing this.
@@ -242,22 +253,22 @@ of the C features that each of these programs exercises:
 7 && \lstinline|cat1.c| & C & 2 &&& \x &&&&&&& \x &&&&&&&&&&&&&&&& \\
 8 && \lstinline|cat2.c| & S & 13 &&& \x &&&& \x &&& \x &&&&&&&& \x &&&& \x &&&& \\
 9 && \lstinline|cat3.c| & S & 76 && \x & \x & \x &&& \x &&& \x &&& \x & \x &&&& \x &&&& \x &&&& \\
-10 && \lstinline|coreutils/src/cat.c| & R & ${\sim}800$ && \x & \x & \x &&& \x & \x && \x &&& \x && \x & \x && \x && \x && \x &&&& \\
+10 && \href{https://github.com/coreutils/coreutils/blob/v8.27/src/cat.c}{\lstinline|coreutils/src/cat.c|} & R & ${\sim}800$ && \x & \x & \x &&& \x & \x && \x &&& \x && \x & \x && \x && \x && \x &&&& \\
 11 && \lstinline|malloc1.c| & F & 16 &&&&&&&& \x &&&&&&&&&& \x &&&&&&&& \\
 12 && \lstinline|malloc2.c| & F & 28 &&&&&&&& \x &&&&&&&&&& \x &&& \x &&&&& \\
 13 && \lstinline|malloc3.c| & F & 26 &&&&&&&& \x &&&&&&&&&& \x &&& \x &&&&& \\
 14 && \lstinline|malloc4.c| & F & 180 && \x &&&&& \x & \x &&&&&&&&&& \x & \x & \x && \x & \x &&& \\
-15 && \lstinline|glibc/malloc/malloc.c| & R & $\hspace{4pt}{\sim}6000$ && \x & \x & \x &&& \x & \x && \x & \x &&&& \x & \x && \x & \x & \x &&&&&& \\
+15 && \href{https://github.com/bminor/glibc/blob/glibc-2.24.90/malloc/malloc.c}{\lstinline|glibc/malloc/malloc.c|} & R & $\hspace{4pt}{\sim}6000$ && \x & \x & \x &&& \x & \x && \x & \x &&&& \x & \x && \x & \x & \x &&&&&& \\
 16 && \lstinline|qsort1.c| & F & 23 && \x &&& \x &&&&&&&&&&&&& \x &&&&&&&& \\
 17 && \lstinline|qsort2.c| & F & 50 && \x &&& \x &&&&&&&&&&& \x && \x &&&&&&&& \\
-18 && \lstinline|qsort3.c| & F & 43 && \x &&& \x &&& \x &&&&&& \x &&&& \x &&&&&&&& \\
+18 && \lstinline|qsort3.c| & F & 50 && \x &&& \x &&& \x &&&&&& \x &&&& \x &&&&&&&& \\
 19 && \lstinline|qsort4.c| & F & 30 && \x &&& \x && \x & \x &&&&&& \x &&&& \x & \x &&&&&&& \\
 20 && \lstinline|qsort5.c| & S & 83 && \x & \x & \x & \x && \x & \x && \x & \x &&& \x &&&& \x &&&& \x &&&& \\
 21 && \lstinline|sqrt1.c| & F & 14 &&&&&&&&&&&&&&&&&&&&&&&&& \x & \\
 22 && \lstinline|sqrt2.c| & F & 12 &&&&&&&& \x &&&&&&&&&& \x &&&&&&& \x & \x \\
 23 && \lstinline|sqrt3.c| & F & 9 &&&&&&&&&&&&&&&&&&&&& \x &&&& \x & \x \\
 24 && \lstinline|sqrt4.c| & F & 190 && \x && \x &&&& \x &&&&&& \x & \x &&&&& \x & \x & \x & \x && \x & \x \\
-25 && \lstinline|glibc/soft-fp/sqrtsf2.c|$\hspace{8pt}$ & R & ${\sim}500$ && \x && \x &&& \x & \x &&&&&& \x & \x &&&&& \x & \x & \x & \x && \x & \x \\
+25 && \href{https://github.com/bminor/glibc/blob/glibc-2.24.90/soft-fp/sqrtsf2.c}{\lstinline|glibc/soft-fp/sqrtsf2.c|}$\hspace{8pt}$ & R & ${\sim}500$ && \x && \x &&& \x & \x &&&&&& \x & \x &&&&& \x & \x & \x & \x && \x & \x \\
 \end{tabular}\toolong
 \medskip
 \end{center}
@@ -285,8 +296,13 @@ Also, the exact line counts will be dependent on the version of the
 software.
 We do not want to restrict the version that should be used for this
 challenge, but while developing this benchmark we looked at version
-8.27 of \texttt{coreutils}, and version 2.24.90 of \texttt{glibc}.
-
+8.27 of \texttt{coreutils}, and version 2.24.90 of \texttt{glibc}:
+\begin{center}
+\begin{tabular}{l}
+\url{https://github.com/coreutils/coreutils/tree/v8.27} \\
+\url{https://github.com/bminor/glibc/tree/glibc-2.24.90}
+\end{tabular}
+\end{center}
 The listings in this paper only show the relevant parts of the programs.
 These are the parts that should be verified.
 However, in case it is useful to take other parts of these programs into
@@ -294,7 +310,7 @@ account, that is of course allowed.
 Each of these programs (apart from two of the three GNU ones) is a program that can be compiled on its own,
 so each program has a \texttt{main} function in its file too.
 
-\section{Factorial}
+\section{Factorial}\label{fac}
 
 \subsection{A simple for loop}
 The very first program fragment is a \texttt{for} loop,
@@ -405,7 +421,7 @@ This is the real program that the previous program was a simplified version of.
 When on a Linux system one runs \texttt{cat}, this is the code that is
 executed.
 
-The file \texttt{coreutils-8.27/src/cat.c} contains 767 lines of code,
+The file \texttt{coreutils-8.27/src/cat.c} contains 768 lines of code,
 but that code includes eight GNU header files,
 links to a function for handling command line options, and uses
 the GNU function \texttt{xmalloc}, a wrapper around the C standard library function
@@ -471,7 +487,7 @@ for an appropriate block.
 
 \subsection{The GNU version}
 And again, the last program of this section is the full GNU implementation of \texttt{malloc} and \texttt{free} in \texttt{glibc}.
-The main file \lstinline|glibc/malloc/malloc.c| in version 2.24.90 of \texttt{glibc} has 5,318 lines of code, but this file depends on many other files.
+The main file \lstinline|glibc/malloc/malloc.c| in version 2.24.90 of \texttt{glibc} has 5,289 lines of code, but this file depends on many other files.
 
 The file contains the sentence:
 \begin{quote}
@@ -522,14 +538,22 @@ which is modeled here by giving the \lstinline{partition} function pointers
 to the variables to be modified.
 
 \subsection{The algorithm in the real program}
-If we take the GNU implementation of quicksort, and simplify it to
+If we take the GNU implementation of quicksort, and simplify it and also make it
 only apply to arrays of doubles, this is what one gets:
-\lstinputlisting[linerange={1-43},emph={SWAP,quicksort,main}]{../src/qsort/qsort3.c}
-This is just a variation on the previous program, but it has
+\lstinputlisting[linerange={1-50},emph={SWAP,quicksort,main}]{../src/qsort/qsort3.c}
+This is just a variation on the previous programs, but it has
 a few nice features, like using a macro for swapping elements in the array.
 One probably wants to prove this \emph{macro} correct,
 which means that just verifying the macro-expanded version of the
 program will not be too attractive in this case.
+
+Apart from the fact that this function only sorts doubles instead
+of sorting arrays with elements of an arbitrary type,
+it omits two optimizations from the GNU version of this code.
+This uses insertion sort when the size of the subarray drops
+below a certain threshold,
+and it manages a (short) \emph{explicit} stack for the recursive calls,
+instead of using the recursion of C.
 
 \subsection{Quicksort on arbitrary types}
 Here is a version of the simple version of quicksort that
@@ -691,6 +715,25 @@ implemented in the file \lstinline|sqrtsf2.c|:
 \lstinputlisting[linerange={31-49},emph={__sqrtsf2}]{../src/sqrt/sqrtsf2.c}
 Of course the macros defined through the \lstinline|#include| lines pull in lots of other code from other files, and expand this program significantly.
 
+\section{Versions}
+
+This benchmark will go through various versions.
+We will use dates for versioning.
+The initial version of this document is dated April 1, 2019.
+
+Every time a problem with one of the programs in this
+benchmark is discovered, we will modify the program, and give
+the benchmark a new version date.
+In that case we will add a short description of the problem and the modification to
+this section, as some kind of high level changelog.
+
+Note that bad behavior of programs that go outside their
+intended domain of behavior does not count as a problem.
+For example, integer overflow in the earlier factorial programs in Section~\ref{fac}
+does not count as a problem.
+It should be handled as a precondition of the correctness of the code, and
+does not merit adapting the code in the benchmark.
+
 \section{Discussion}
 We can imagine different reactions to the collection of programs that we present here:
 \begin{itemize}
@@ -744,19 +787,19 @@ weaknesses of the different current approaches for formal C verification.
 
 \section{Related work}
 
-Competitions/benchmarks that are very similar to the one presented in this paper
+Benchmarks/competitions that are very similar to the one presented in this paper
 already exist:
 \begin{itemize}
 \item
-VACID-0 \cite{lei:mos:10}. \\
+VACID-0 \cite{lei:mos:10}: \\
 \url{https://archive.codeplex.com/?p=vacid}
 
 \item
-Verfified Software Competition \cite{xxx}. \\
-\url{https://sites.google.com/a/vscomp.org/main/}
+Verfified Software Competition \cite{fil:pas:stu:12,kle:mul:sha:lea:wus:alk:art:bro:cha:coh:hil:jac:lei:mon:pie:pol:rid:sma:tob:tue:ulb:wei:11}. %\\
+%\url{https://sites.google.com/a/vscomp.org/main/}
 
 \item
-VerifyThis Competition \cite{xxx}. \\
+VerifyThis Competition: \\
 \url{http://www.pm.inf.ethz.ch/research/verifythis.html}
 
 \end{itemize}
@@ -764,6 +807,17 @@ The main difference from the benchmark
 presented here is that they do not target C explicitly.
 Yet, they sometimes use C code in their statements, and sometimes
 participants are using C for their solutions.
+
+There are also benchmarks that are about specific programming languages,
+which often have a C section, like for example:
+\begin{itemize}
+\item
+Collection of Verification Tasks of the SoSy-Lab at the LMU Munich: \\
+\url{https://github.com/sosy-lab/sv-benchmarks/tree/master/c}
+
+\end{itemize}
+However, in that case the focus is not on formally proving that programs
+are fully correct in an interactive way, but on benchmarking the performance of non-interactive tools for program verification.
 
 \section*{Acknowledgments}
 Many thanks to Jean-Christophe Filli\^atre for helpful comments.
