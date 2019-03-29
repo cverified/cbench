@@ -110,10 +110,14 @@ C program verification using formal methods.
 
 Here is a challenge for people who are interested in practical C program verification using formal methods.
 Show us how to verify the correctness of the twenty-five programs in this paper.
-
+The sources of these programs can be found at:
+\begin{center}
+\url{http://github.com/freekwiedijk/cbench} \\
+\url{http://www.cs.ru.nl/~freek/cbench/} \\
+\end{center}
 In our Sovereign project \cite{eek:geu:sme:wie:14}, which has as its focus the safety and correctness of industrial programs, we \emph{are} interested in practical C program verification.
 Therefore we would like to have a clearer overview of frameworks for doing this.
-At first we planned to only have a few small programs for trying out the different systems (e.g., \cite{app:11}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11}, \cite{mar:07}).
+At first we planned to only have a few small programs for trying out the different systems (e.g., \cite{app:11}, \cite{cor:cuo:kir:mar:pre:puc:sig:yak:18}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11}).
 However, this then grew into this benchmark.
 
 The original idea of this benchmark was that it should be about five programs.
@@ -132,7 +136,7 @@ The few keywords given here indicate why we chose these five programs.
 with respect to \texttt{fac}.)
 
 For each of these programs we now have several variants, ranging from very small with only a few lines of code to significant programs with reasonable behaviors.
-We intentionally intend the programs in this benchmark to be on the
+We intentionally kept the programs in this benchmark on the
 spectrum:
 \begin{center}
 \begin{picture}(200,35)
@@ -330,9 +334,11 @@ We claimed that the for loop has a counterpart in most programming languages,
 but this might not hold for functional languages.
 Here is the obvious recursive definition of the factorial function in C:
 \lstinputlisting[linerange={1-5},emph={fac,main}]{../src/fac/fac4.c}
-This program might overflow its stack when \texttt{n} is too large
-(although we did not succeed in having GCC compile this to a program
-with this behavior).
+When called with too large an \texttt{n}
+this program can overflow its stack
+(for example when compiled with \texttt{gcc} \texttt{-O0} and called with
+\texttt{1000000} this happens).
+%(although we did not succeed in having GCC compile this to a program with this behavior)
 The C standard does not address that issue, but the verification of this
 code might take this into account in its pre-condition.
 
@@ -729,14 +735,40 @@ real life C programming, so we resisted the temptation to include them in our be
 
 There are twenty-five programs in this paper, and there are multiple
 frameworks for formal C verification out there, like the ones described
-in \cite{app:11}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11} and \cite{mar:07}.
+in \cite{app:11}, \cite{cor:cuo:kir:mar:pre:puc:sig:yak:18}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12} and \cite{jac:sma:phi:vog:pen:pie:11}.
 We think this could be a great source for student projects.
 Just say for example: `prove the correctness of program number three in framework
 number one' (actually something close to that one already has been done, see the slides of \cite{wie:16:1}).
 That way we will get a good comparison of what are the strengths and
 weaknesses of the different current approaches for formal C verification.
 
+\section{Related work}
+
+Competitions/benchmarks that are very similar to the one presented in this paper
+already exist:
+\begin{itemize}
+\item
+VACID-0 \cite{lei:mos:10}. \\
+\url{https://archive.codeplex.com/?p=vacid}
+
+\item
+Verfified Software Competition \cite{xxx}. \\
+\url{https://sites.google.com/a/vscomp.org/main/}
+
+\item
+VerifyThis Competition \cite{xxx}. \\
+\url{http://www.pm.inf.ethz.ch/research/verifythis.html}
+
+\end{itemize}
+The main difference from the benchmark
+presented here is that they do not target C explicitly.
+Yet, they sometimes use C code in their statements, and sometimes
+participants are using C for their solutions.
+
+\section*{Acknowledgments}
+Many thanks to Jean-Christophe Filli\^atre for helpful comments.
+
 \bibliographystyle{plain}
-\bibliography{bench}
+\bibliography{cbench}
 
 \end{document}
