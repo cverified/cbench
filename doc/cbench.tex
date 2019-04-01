@@ -111,8 +111,8 @@ C program verification using formal methods.
 This benchmark can be used for system demonstration,
 for comparison of verification effort between systems,
 and as a friendly competition.
-For this last purpose, there is a scoring system in which
-a system can score up to a hundred points.
+For this last purpose, we give a scoring formula that allows
+a verification system to score up to a hundred points.
 \end{abstract}
 
 \section{Introduction}
@@ -126,6 +126,10 @@ The sources of these programs can be found at:
 \url{https://www.cs.ru.nl/~freek/cbench/}
 \end{tabular}
 \end{center}
+\looseness=-1
+If you take this challenge, we will add
+your work (or a pointer to it, as you prefer) to the repository.
+
 In our Sovereign project \cite{eek:geu:sme:wie:14}, which has as its focus the safety and correctness of industrial programs, we \emph{are} interested in practical C program verification.
 Therefore we would like to have a clearer overview of frameworks for doing this.
 At first we planned to only have a few small programs for trying out the different systems (e.g., \cite{app:11}, \cite{cor:cuo:kir:mar:pre:puc:sig:yak:18}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12}, \cite{jac:sma:phi:vog:pen:pie:11}).
@@ -603,7 +607,7 @@ Maybe if there are some guarantees about relative error bounds
 of the arithmetic operations, an error bound on the result of this
 function can be proved.
 
-\subsection{An approximation of square root by bit shifting}
+\subsection{An approximation of square root by bit shifting}\label{bitshift}
 The IEEE 754 representation of floating point numbers allows
 for an approximation to the square root function
 that can be calculated extremely fast.
@@ -715,24 +719,29 @@ implemented in the file \lstinline|sqrtsf2.c|:
 \lstinputlisting[linerange={31-49},emph={__sqrtsf2}]{../src/sqrt/sqrtsf2.c}
 Of course the macros defined through the \lstinline|#include| lines pull in lots of other code from other files, and expand this program significantly.
 
+In the latest versions of \texttt{glibc} the source code of square root in \texttt{libc/soft-sp} has been moved to a larger file that contains many arithmetical operations together.
+However, we prefer to have the 25th program in our benchmark be about a single small source file that we essentially can include in this paper.
+For this reason, this benchmark stays linked to version 2.24.90 of \texttt{glibc}.
+
 \section{Versions}
 
-This benchmark will go through various versions.
+The benchmark presented in this paper will go through various versions.
 We will use dates for versioning.
-The initial version of this document is dated April 1, 2019.
+The initial version is dated April 1, 2019, and might be
+referred to as the \emph{April fool's} version.
 
 Every time a problem with one of the programs in this
-benchmark is discovered, we will modify the program, and give
+benchmark is discovered, we will modify the program to remove the problem, and give
 the benchmark a new version date.
-In that case we will add a short description of the problem and the modification to
-this section, as some kind of high level changelog.
+In that case we will add a short description to this section of the problem, how it was discovered and how the program was changed to remove the problem.
+This means that this section will be some kind of high level changelog.
 
-Note that bad behavior of programs that go outside their
-intended domain of behavior does not count as a problem.
+Note that bad behavior outside the
+intended domain of behavior of a program does not count as a problem.
 For example, integer overflow in the earlier factorial programs in Section~\ref{fac}
-does not count as a problem.
-It should be handled as a precondition of the correctness of the code, and
-does not merit adapting the code in the benchmark.
+is not a problem.
+This should be handled by a precondition of the correctness statement of the code, and
+does not merit modification of the code in the benchmark.
 
 \section{Discussion}
 We can imagine different reactions to the collection of programs that we present here:
@@ -762,7 +771,7 @@ Why is it not interesting to be able to verify what
 to us are characteristic C programs?
 
 It was tempting to also include programs in our benchmark that are cute and/or dazzling.
-(The square root approximation by bit shifting was borderline in this respect.)
+(The square root approximation by bit shifting in Section~\ref{bitshift} was borderline in this respect.)
 For instance, consider two possible additions to the factorial
 section,
 the first being a surprising application of the preprocessor:
@@ -771,7 +780,7 @@ the first being a surprising application of the preprocessor:
 (it turns out that the factorial is calculated here at compile time),
 and the second being a price winning submission to the international
 obfuscated C code contest
-(shown on the next page: it implements a functional language and then does the recursion by
+(it implements a functional language and then does the recursion by
 evaluating Church's $Y$-combinator.)
 However, we do not consider these two programs representative of
 real life C programming, so we resisted the temptation to include them in our benchmark.
@@ -780,14 +789,14 @@ There are twenty-five programs in this paper, and there are multiple
 frameworks for formal C verification out there, like the ones described
 in \cite{app:11}, \cite{cor:cuo:kir:mar:pre:puc:sig:yak:18}, \cite{dah:mos:san:tob:sch:09}, \cite{gre:and:klei:12} and \cite{jac:sma:phi:vog:pen:pie:11}.
 We think this could be a great source for student projects.
-Just say for example: `prove the correctness of program number three in framework
+Just say, for example: `prove the correctness of program number three in framework
 number one' (actually something close to that one already has been done, see the slides of \cite{wie:16:1}).
 That way we will get a good comparison of what are the strengths and
 weaknesses of the different current approaches for formal C verification.
 
 \section{Related work}
 
-Benchmarks/competitions that are very similar to the one presented in this paper
+Benchmarks/competitions very similar to the one presented in this paper
 already exist:
 \begin{itemize}
 \item
@@ -808,19 +817,19 @@ presented here is that they do not target C explicitly.
 Yet, they sometimes use C code in their statements, and sometimes
 participants are using C for their solutions.
 
-There are also benchmarks that are about specific programming languages,
+There are also benchmarks that \emph{are} about specific programming languages,
 which often have a C section, like for example:
 \begin{itemize}
 \item
-Collection of Verification Tasks of the SoSy-Lab at the LMU Munich: \\
+Collection of Verification Tasks of the SoSy-Lab at the Ludwig-Maximilian University in Munich: \\
 \url{https://github.com/sosy-lab/sv-benchmarks/tree/master/c}
 
 \end{itemize}
-However, in that case the focus is not on formally proving that programs
-are fully correct in an interactive way, but on benchmarking the performance of non-interactive tools for program verification.
+However, in that case the focus is not so much on formally proving that programs
+are fully correct, but on benchmarking the performance of non-interactive tools for discovering problems in the programs.
 
 \section*{Acknowledgments}
-Many thanks to Jean-Christophe Filli\^atre for helpful comments.
+Thanks to Jean-Christophe Filli\^atre for many helpful comments.
 
 \bibliographystyle{plain}
 \bibliography{cbench}
