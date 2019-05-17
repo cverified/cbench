@@ -32,7 +32,7 @@ struct malloc_chunk av_bin;
 
 #define SIZE_SZ (sizeof(size_t))
 #define MALLOC_ALIGNMENT (2*SIZE_SZ < _Alignof(max_align_t) \
-  ? _Alignof(long double) : 2*SIZE_SZ)
+  ? _Alignof(max_align_t) : 2*SIZE_SZ)
 #define MALLOC_ALIGN_MASK (MALLOC_ALIGNMENT - 1)
 
 #define MIN_CHUNK_SIZE (sizeof(struct malloc_chunk))
