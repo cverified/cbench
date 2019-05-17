@@ -11,3 +11,5 @@ Points scored on the benchmark so far (that we are aware of):
 | `fac2.c`  |     |   4 |
 | `fac3.c`  |     |   4 |
 | `fac4.c`  |     |   4 |
+
+The VeriFast contributions are in the repository [cbench-verifast](https://github.com/cverified/cbench-verifast).
