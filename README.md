@@ -2,10 +2,10 @@ Here is a challenge for people who are interested in practical C program verific
 
 If you are interested in this in any way, feel free to send me mail (and preferably verification proofs of these programs) at freek@cs.ru.nl.
 
-Points scored on the benchmark that we are aware of:
+Points scored on the benchmark so far that we are aware of:
 
 |           | [VeriFast](https://github.com/verifast/verifast) | [VST](https://vst.cs.princeton.edu) |
-| --------- | ---:| ---:|
+|-----------|----:|----:|
 | **Total** |   4 |  12 |
 | `fac1.c`  |   4 |   4 |
 | `fac2.c`  |     |   4 |
