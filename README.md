@@ -19,6 +19,6 @@ Points scored on the benchmark thus far (that we are aware of):
 | `qsort3.c`  |     |   4 |
 | `qsort4.c`  |     |   3 |
 | `sqrt1.c`   |     |   4 |
-| `sqrt1.c`   |     |   3 |
+| `sqrt3.c`   |     |   3 |
 
 The verifications are in the repositories [cbench-verifast](https://github.com/cverified/cbench-verifast) and [cbench-vst](https://github.com/cverified/cbench-vst).
